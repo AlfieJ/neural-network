@@ -1,139 +1,6 @@
-type elementwiseFunction = (a: number, b: number) => number;
+import { Vector } from "./vector";
+import { addElementwise, subtractElementwise, multiplyElementwise, mapFunction, randomFunction, elementwiseFunction } from "./linearAlgebra";
 
-function addElementwise(a: number, b: number): number {
-    return a + b;
-}
-
-function subtractElementwise(a: number, b: number): number {
-    return a - b;
-}
-
-function multiplyElementwise(a: number, b: number): number {
-    return a * b;
-}
-
-type mapFunction = (a: number) => number;
-
-export function randomFunction(_: number) {
-    return Math.random();
-}
-
-export function sigmoidFunction(a: number) {
-    // return 1.0 / (1.0 + Math.pow(Math.E, -a));
-    return 1 / (1 + Math.exp(-a));
-}
-
-export class Vector {
-    /** Constructor to specify the values in the vector */
-    constructor(private _values: number[]) {
-    }
-
-    /** Statically construct a Vector of the specified size, with values
-     * initialized to 0
-     */
-    static initialize(num: number): Vector {
-        let values = Array(num).fill(0);
-        return new Vector(values);
-    }
-
-    length(): number {
-        return this._values.length;
-    }
-
-    get(i: number): number {
-        if(i < 0 || i >= this._values.length)
-            throw new Error(`Vector.get invalid index ${i} (vector size ${this._values.length})`);
-        return this._values[i];
-    }
-
-    set(i: number, value: number): void {
-        if(i < 0 || i >= this._values.length)
-            throw new Error(`Vector.set invalid index ${i} (vector size ${this._values.length})`);
-        this._values[i] = value;
-    }
-    
-    sum(): number {
-        return this._values.reduce((sum, x) => sum + x, 0.0);
-    }
-    
-    add(x: number | Vector): Vector {
-        if (x instanceof Vector)
-            return this.doElementwiseVector(x, addElementwise);
-        else
-            return this.doElementwiseValue(x, addElementwise);
-    }
-    
-    subtract(x: number | Vector): Vector {
-        if (x instanceof Vector)
-            return this.doElementwiseVector(x, subtractElementwise);
-        else
-            return this.doElementwiseValue(x, subtractElementwise);
-    }
-
-    multiply(x: number | Vector): Vector {
-        if (x instanceof Vector)
-            return this.doElementwiseVector(x, multiplyElementwise);
-        else
-            return this.doElementwiseValue(x, multiplyElementwise);
-    }
-
-    dot(v: Vector): number {
-        let v2: Vector = this.multiply(v);
-        return v2.sum();
-    }
-
-    map(func: mapFunction): void {
-        for (let i = 0; i < this._values.length; ++i) {
-            let result = func(this._values[i]);
-            this._values[i] = result;
-        }
-    }
-
-    randomize(min: number = 0, max: number = 10, integers: boolean = true): void {
-        // Fill the vector with random #s between 0 and 1
-        this.map(randomFunction);
-        for (let i = 0; i < this._values.length; ++i) {
-            // And now scale those random numbers out to fit our min/max values
-            this._values[i] = this._values[i] * (max - min) + min;
-            if (integers)
-                this._values[i] = Math.floor(this._values[i]);
-        }
-    }
-
-    asMatrix(horizontal: boolean): Matrix {
-        let vectors: Vector[] = [this];
-        let m: Matrix = Matrix.initialize(vectors, horizontal);
-        return m;
-    }
-
-    toString(): string {
-        let s = `${this._values.length} size\n`;
-        for (let i = 0; i < this._values.length; ++i) {
-            s += this._values[i].toFixed(3) + "\n";
-        }
-        return s;
-    }
-
-    private doElementwiseVector(v: Vector, func: elementwiseFunction): Vector {
-        if (v._values.length != this._values.length)
-            throw Error(`Incompatible sizes (${this._values.length} vs. ${v._values.length})`);
-        
-        let newValues = Array(this._values.length);
-        for (let i = 0; i < this._values.length; ++i) {
-            newValues[i] = func(this._values[i], v._values[i]);
-        }
-        return new Vector(newValues);
-    }
-
-
-    private doElementwiseValue(x: number, func: elementwiseFunction): Vector {
-        let newValues = Array(this._values.length);
-        for (let i = 0; i < this._values.length; ++i) {
-            newValues[i] = func(this._values[i], x);
-        }
-        return new Vector(newValues);
-    }
-}
 
 export class Matrix {
     private _values: number[][];
@@ -151,15 +18,15 @@ export class Matrix {
      * Vector sizes.
      * The Vectors can be interpreted as a series of horizontal vectors,
      * or vertical vectors. The horizontal parameter is used to specify.
-     * @param vectors 
-     * @param horizontal 
+     * @param vectors
+     * @param horizontal
      */
     static initialize(vectors: Vector[], horizontal: boolean): Matrix {
         // There needs to be at least 1 vector, so the matrix dimensions
         // can be determined.
         if (vectors.length < 1)
             throw new Error("Matrix.initialize: there needs to be at least one vector");
-        
+
         // Make sure all vectors have the same length
         for (let i = 1; i < vectors.length; ++i) {
             if (vectors[i].length() != vectors[0].length())
@@ -202,7 +69,7 @@ export class Matrix {
     toString(): string {
         let s = `${this.rows} x ${this.cols}\n`;
         for (let r = 0; r < this.rows; ++r) {
-            s += this.toStringRow(r) + "\n";
+            s += `${this.toStringRow(r)}\n`;
         }
         return s;
     }
@@ -220,6 +87,7 @@ export class Matrix {
     add(x: number | Matrix): Matrix {
         if (x instanceof Matrix)
             return this.doElementwiseMatrix(x, addElementwise);
+
         else
             return this.doElementwiseValue(x, addElementwise);
     }
@@ -227,6 +95,7 @@ export class Matrix {
     subtract(x: number | Matrix): Matrix {
         if (x instanceof Matrix)
             return this.doElementwiseMatrix(x, subtractElementwise);
+
         else
             return this.doElementwiseValue(x, subtractElementwise);
     }
@@ -234,6 +103,7 @@ export class Matrix {
     multiply(x: number | Matrix): Matrix {
         if (x instanceof Matrix)
             return this.doElementwiseMatrix(x, multiplyElementwise);
+
         else
             return this.doElementwiseValue(x, multiplyElementwise);
     }
@@ -250,14 +120,14 @@ export class Matrix {
     dot(m: Matrix): Matrix {
         if (this.cols != m.rows)
             throw new Error(`dot: matrix size mismatch ${this.rows} x ${this.cols} vs. ${m.rows} x ${m.cols}`);
-        
+
         let newM = new Matrix(this.rows, m.cols);
 
         // Calculate the columns once for performance reasons
         let columns = Array(m.cols);
         for (let c = 0; c < m.cols; ++c)
             columns[c] = m.asColumnVector(c);
-        
+
         for (let r = 0; r < this.rows; ++r) {
             let v1 = this.asRowVector(r);
             for (let c = 0; c < m.cols; ++c) {
@@ -292,10 +162,9 @@ export class Matrix {
     }
 
     randomize(min: number = 0, max: number = 10, integers: boolean = true): void {
-        this.map(randomFunction);
         for (let r = 0; r < this.rows; ++r) {
             for (let c = 0; c < this.cols; ++c) {
-                this._values[r][c] = this._values[r][c] * (max - min) + min;
+                this._values[r][c] = Math.random() * (max - min) + min;
                 if (integers)
                     this._values[r][c] = Math.floor(this._values[r][c]);
             }
@@ -315,7 +184,7 @@ export class Matrix {
     private doElementwiseMatrix(m: Matrix, func: elementwiseFunction): Matrix {
         if (this.rows != m.rows || this.cols != m.cols)
             throw new Error(`doElementwiseMatrix: matrix size mismatch ${this.rows} x ${this.cols} vs. ${m.rows} x ${m.cols}`);
-        
+
         let newM = new Matrix(this.rows, this.cols);
         for (let r = 0; r < this.rows; ++r) {
             for (let c = 0; c < this.cols; ++c) {

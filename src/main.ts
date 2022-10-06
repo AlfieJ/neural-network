@@ -1,4 +1,5 @@
-import { Matrix, Vector } from "./linearAlgebra";
+import { Matrix } from "./linearAlgebra/matrix";
+import { Vector } from "./linearAlgebra/vector";
 import { NeuralNetwork } from "./neuralNetwork";
 import { Perceptron, f } from "./perceptron";
 

@@ -1,5 +1,7 @@
 import { runInThisContext } from "vm";
-import { Matrix, sigmoidFunction, Vector } from "./linearAlgebra";
+import { sigmoidFunction } from "./linearAlgebra/linearAlgebra";
+import { Matrix } from "./linearAlgebra/matrix";
+import { Vector } from "./linearAlgebra/vector";
 
 export class NeuralNetwork {
     private weights_ih: Matrix;
@@ -15,8 +17,8 @@ export class NeuralNetwork {
 
         this.bias_h = new Matrix(numHidden, 1);
         this.bias_o = new Matrix(numOutput, 1);
-        this.bias_h.randomize();
-        this.bias_o.randomize();
+        this.bias_h.randomize(-1, 1, false);
+        this.bias_o.randomize(-1, 1, false);
     }
 
     feedForward(inputs: Vector): Vector {
