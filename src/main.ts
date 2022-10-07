@@ -1,5 +1,6 @@
 import { Matrix } from "./linearAlgebra/matrix";
-import { Vector } from "./linearAlgebra/vector";
+// import { Vector } from "./linearAlgebra/vector";
+import { Vector2 } from "./linearAlgebra/vector2";
 import { NeuralNetwork } from "./neuralNetwork";
 import { Perceptron, f } from "./perceptron";
 
@@ -49,8 +50,29 @@ import { Perceptron, f } from "./perceptron";
 // let m4 = m1.dot(m2);
 // console.log(m4.toString());
 
+let training = [
+    [Vector2.initializeV2([0, 0], false), Vector2.initializeV2([0], false)],
+    [Vector2.initializeV2([0, 1], false), Vector2.initializeV2([1], false)],
+    [Vector2.initializeV2([1, 0], false), Vector2.initializeV2([1], false)],
+    [Vector2.initializeV2([1, 1], false), Vector2.initializeV2([0], false)],
+];
 
 let nn = new NeuralNetwork(2, 2, 1);
-let input = new Vector([1, 0]);
-let output = nn.feedForward(input);
-console.log(output.toString());
+// let input = Vector2.initializeV2([1, 0]);
+// let output = nn.feedForward(input);
+// console.log(output.toString());
+
+for (let i = 0; i < 50000; ++i) {
+    let data = training[Math.floor(Math.random() * 4)]
+    nn.train(data[0], data[1]);
+}
+
+let a = nn.feedForward(training[0][0]);
+let b = nn.feedForward(training[1][0]);
+let c = nn.feedForward(training[2][0]);
+let d = nn.feedForward(training[3][0]);
+
+console.log(a.toString());
+console.log(b.toString());
+console.log(c.toString());
+console.log(d.toString());

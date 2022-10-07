@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Launch Program",
-            "program": "lib/main.js",
+            "program": "lib/src/main.js",
             "request": "launch",
             "skipFiles": [
                 "<node_internals>/**"

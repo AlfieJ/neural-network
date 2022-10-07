@@ -24,4 +24,6 @@ export function sigmoidFunction(a: number) {
     return 1 / (1 + Math.exp(-a));
 }
 
-
+export function sigmoidFunctionDerivative(a: number) {
+    return a * (1 - a);
+}
