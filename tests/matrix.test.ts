@@ -37,16 +37,25 @@ describe('Matrix', () => {
         ];
         expect(() => Matrix.initialize(values)).toThrow();
 
+        values = [
+            [],
+            [3, 5, 7]
+        ]
+        expect(() => Matrix.initialize(values)).toThrow();
+
         // And have to have something to size off of
         values = [];
         expect(() => Matrix.initialize(values)).toThrow();
     })
     test('Should throw on invalid accesses', () => {
         let m = new Matrix(3, 2);
+        // row indices have to be between 0 and 2
         expect(() => m.get(4, 4)).toThrow();
         expect(() => m.get(3, 1)).toThrow();
-        expect(() => m.get(0, 2)).toThrow();
         expect(() => m.get(-1, 0)).toThrow();
+
+        // column indices have to be between 0 and 1
+        expect(() => m.get(0, 2)).toThrow();
         expect(() => m.get(0, -1)).toThrow();
     })
     test('Should clone OK', () => {
@@ -126,8 +135,7 @@ describe('Matrix', () => {
         expect(m3.get(1, 2)).toBe(221);
     })
     test('transposes OK', () => {
-        let m1 = new Matrix(3, 2);
-        m1.randomize();
+        let m1 = new Matrix(3, 2).randomize();
         let m2 = m1.transpose();
 
         expect(m1.rows).toBe(3);
@@ -141,10 +149,14 @@ describe('Matrix', () => {
         expect(m2.get(1, 1)).toBe(m1.get(1, 1));
         expect(m2.get(1, 2)).toBe(m1.get(2, 1));
 
-        m1 = new Matrix(1, 4);
+        m1 = new Matrix(1, 4).randomize();
         m2 = m1.transpose();
         expect(m2.rows).toBe(4);
         expect(m2.cols).toBe(1);
+        expect(m2.get(0, 0)).toBe(m1.get(0, 0));
+        expect(m2.get(1, 0)).toBe(m1.get(0, 1));
+        expect(m2.get(2, 0)).toBe(m1.get(0, 2));
+        expect(m2.get(3, 0)).toBe(m1.get(0, 3));
     })
     test('dot product works OK', () => {
         let values = [
@@ -195,6 +207,21 @@ describe('Matrix', () => {
         expect(m3.get(3, 1)).toBe(91);
         expect(m3.get(3, 2)).toBe(119);
         expect(m3.get(3, 3)).toBe(161);
+    })
+    test('isEqual works OK', () => {
+        let values = [
+            [2, 3, 5],
+            [7, 11, 13],
+        ]
+        let m1 = Matrix.initialize(values);
+        let m2 = Matrix.initialize(values);
+
+        expect(m1.isEqual(m2)).toBe(true);
+
+        // Change the 11 to 17
+        m2.set(1, 1, 17);
+
+        expect(m1.isEqual(m2)).toBe(false);
     })
 });
 

@@ -1,20 +1,16 @@
-// import { Vector } from "./vector";
-import { addElementwise, subtractElementwise, multiplyElementwise, mapFunction, randomFunction, elementwiseFunction } from "./linearAlgebra";
-import { Vector2 } from "./vector2";
+import { addElementwise, subtractElementwise, multiplyElementwise, mapFunction, elementwiseFunction } from "./linearAlgebra";
 
 
 export class Matrix {
     public _values: number[][];
 
-    constructor(protected _rows: number, protected _cols: number, fill: boolean = true) {
+    constructor(protected _rows: number, protected _cols: number) {
         if (_rows <= 0 || _cols <= 0)
             throw new Error(`Invalid Matrix size ${_rows} x ${_cols}`);
         
         this._values = Array(_rows);
         for (let r = 0; r < _rows; ++r) {
-            this._values[r] = Array(_cols);
-            if (fill)
-                this._values[r].fill(0);
+            this._values[r] = Array(_cols).fill(0);
         }
     }
 
@@ -38,7 +34,7 @@ export class Matrix {
                 throw new Error("Matrix.initialize: vector lengths error");
         }
 
-        let m = new Matrix(values.length, values[0].length, undefined);
+        let m = new Matrix(values.length, values[0].length);
         values.forEach((row: number[], r: number) => {
             m._values[r] = row.map(x => x);
         });
@@ -47,7 +43,7 @@ export class Matrix {
     }
 
     clone(): Matrix {
-        let m = new Matrix(this._rows, this._cols, undefined);
+        let m = new Matrix(this._rows, this._cols);
         this._values.forEach((row: number[], r: number) =>
             m._values[r] = row.map(x => x));
         return m;
@@ -64,13 +60,23 @@ export class Matrix {
             throw new Error(`Matrix.set invalid index ${r}, ${c} (matrix size ${this._rows} x ${this._cols})`);
         this._values[r][c] = value;
     }
-
+    
     get rows(): number {
         return this._rows;
     }
-
+    
     get cols(): number {
         return this._cols;
+    }
+
+    isEqual(m: Matrix): boolean {
+        let isEqual: boolean = this._rows === m._rows && this._cols === m._cols;
+        if (isEqual) {
+            isEqual = this._values.every((row: number[], r: number) => {
+                return row.every((value: number, c: number) => value === m._values[r][c]);
+            });
+        }
+        return isEqual
     }
 
     sumRow(row: number): number {
@@ -98,13 +104,13 @@ export class Matrix {
     }
 
     toStringRow(row: number): string {
-        let s2 = "";
+        let str = "";
         for (let c = 0; c < this._cols; ++c) {
             if (c > 0)
-                s2 += ", ";
-            s2 += `${this._values[row][c].toFixed(3)}`;
+                str += ", ";
+            str += `${this._values[row][c].toFixed(3)}`;
         }
-        return s2;
+        return str;
     }
 
     add(x: number | Matrix): Matrix {
@@ -128,6 +134,12 @@ export class Matrix {
             return this.doElementwiseValue(x, multiplyElementwise);
     }
 
+    /**
+     * Returns a new Matrix which is this matrix with the map function
+     * applied to each value in the matrix.
+     * @param func The function to apply
+     * @returns A new matrix with func applied
+     */
     map(func: mapFunction): Matrix {
         let newM = new Matrix(this._rows, this._cols);
         this._values.forEach((row: number[], r: number) => {
@@ -136,12 +148,23 @@ export class Matrix {
         return newM;
     }
 
-    mapInPlace(func: mapFunction): void {
+    /**
+     * Apply the map function to each value in this matrix
+     * @param func The function to apply
+     * @returns This matrix
+     */
+    mapInPlace(func: mapFunction): Matrix {
         this._values.forEach((row: number[], r: number) => {
             this._values[r] = row.map((v: number) => func(v))
         });
+        return this;
     }
 
+    /**
+     * Returns a new matrix which is the dot product between this matrix and the parameter
+     * @param m The matrix to apply the dot product with
+     * @returns A new matrix with the dot product.
+     */
     dot(m: Matrix): Matrix {
         if (this._cols != m._rows)
             throw new Error(`dot: matrix size mismatch ${this._rows} x ${this._cols} vs. ${m._rows} x ${m._cols}`);
@@ -159,30 +182,22 @@ export class Matrix {
         return newM;
     }
 
-    asRowVector(row: number): Vector2 {
-        if (row < 0 || row >= this._rows)
-            throw new Error(`asRowVector: invalid row ${row} (matrix has ${this._rows})`);
-        
-        return Vector2.initializeV2(this._values[row], true);
-    }
-
-    asColumnVector(col: number): Vector2 {
-        if (col < 0 || col >= this._cols)
-            throw new Error(`asColumnVector: invalid column ${col} (matrix has ${this._cols})`);
-        
-        let values = Array(this._rows);
-        for (let r = 0; r < this._rows; ++r)
-            values[r] = this._values[r][col];
-        return Vector2.initializeV2(values, false);
-    }
-
-    randomize(min: number = 0, max: number = 10, integers: boolean = true): void {
+    /**
+     * Randomize the values in this matrix
+     * @param min The minimum value to enter in the cells. Default is -1.0
+     * @param max The maximum value to enter in the cells. Default is 1.0
+     * @param integers true if the values should be made integers (true) or should remain floats (false).
+     * Floats is the default
+     * @returns 
+     */
+    randomize(min: number = -1.0, max: number = 1.0, integers: boolean = false): Matrix {
         this._values.forEach((row: number[], r: number) => {
-            if(integers)
+            if (integers)
                 this._values[r] = row.map(_ => Math.floor(Math.random() * (max - min) + min));
             else
                 this._values[r] = row.map(_ => Math.random() * (max - min) + min);
         });
+        return this;
     }
 
     transpose(): Matrix {
